@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIDA v5.5 — Arquitectura Completa</title>
+<style>
+  :root {
+    --bg:        #0a0a0f;
+    --surface:   #111118;
+    --border:    #1e1e2e;
+    --accent:    #7c3aed;
+    --accent2:   #2563eb;
+    --crisis:    #dc2626;
+    --crisis2:   #f97316;
+    --green:     #16a34a;
+    --teal:      #0d9488;
+    --yellow:    #ca8a04;
+    --muted:     #4b5563;
+    --text:      #e2e8f0;
+    --text2:     #94a3b8;
+    --text3:     #64748b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px 24px;
+    min-width: 960px;
+  }
+  h1 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 40px;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 10px;
+    padding-left: 2px;
+  }
+
+  /* ── PIPELINE ── */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .row {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  /* ── ARROW ── */
+  .arrow-down {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 24px;
+    color: var(--muted);
+    font-size: 14px;
+    margin: -2px 0;
+  }
+  .arrow-label {
+    font-size: 9px;
+    color: var(--text3);
+    margin-left: 6px;
+    letter-spacing: 0.08em;
+  }
+
+  /* ── NODES ── */
+  .node {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    background: var(--surface);
+    flex: 1;
+    position: relative;
+    transition: border-color 0.15s;
+  }
+  .node:hover { border-color: var(--muted); }
+
+  .node-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+  .node-sub {
+    font-size: 10px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .node-detail {
+    font-size: 9px;
+    color: var(--text3);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-right: 3px;
+    margin-top: 2px;
+  }
+
+  /* ── COLORS ── */
+  .c-purple  { border-color: #4c1d95; background: #0f0a1e; }
+  .c-purple  .node-title { color: #a78bfa; }
+  .c-purple  .tag { background: #4c1d95; color: #a78bfa; }
+
+  .c-blue    { border-color: #1e3a5f; background: #060d1a; }
+  .c-blue    .node-title { color: #60a5fa; }
+  .c-blue    .tag { background: #1e3a5f; color: #60a5fa; }
+
+  .c-red     { border-color: #7f1d1d; background: #160606; }
+  .c-red     .node-title { color: #f87171; }
+  .c-red     .tag { background: #7f1d1d; color: #f87171; }
+
+  .c-orange  { border-color: #7c2d12; background: #180a04; }
+  .c-orange  .node-title { color: #fb923c; }
+  .c-orange  .tag { background: #7c2d12; color: #fb923c; }
+
+  .c-green   { border-color: #14532d; background: #060f09; }
+  .c-green   .node-title { color: #4ade80; }
+  .c-green   .tag { background: #14532d; color: #4ade80; }
+
+  .c-teal    { border-color: #134e4a; background: #040e0d; }
+  .c-teal    .node-title { color: #2dd4bf; }
+  .c-teal    .tag { background: #134e4a; color: #2dd4bf; }
+
+  .c-yellow  { border-color: #713f12; background: #130c02; }
+  .c-yellow  .node-title { color: #fbbf24; }
+  .c-yellow  .tag { background: #713f12; color: #fbbf24; }
+
+  .c-gray    { border-color: #1e2534; background: #090b10; }
+  .c-gray    .node-title { color: #94a3b8; }
+  .c-gray    .tag { background: #1e2534; color: #94a3b8; }
+
+  /* ── CRISIS TIER BADGE ── */
+  .tier-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .tier {
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+  .tier-0 { border-color: #14532d; color: #4ade80; background: #060f09; }
+  .tier-3 { border-color: #713f12; color: #fbbf24; background: #130c02; }
+  .tier-2 { border-color: #7c2d12; color: #fb923c; background: #180a04; }
+  .tier-1 { border-color: #7f1d1d; color: #f87171; background: #160606; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0 20px;
+  }
+
+  /* ── COMPARISON TABLE ── */
+  .compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+    margin-top: 12px;
+  }
+  .compare th {
+    text-align: left;
+    padding: 6px 10px;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+  }
+  .compare td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #0f0f1a;
+    vertical-align: top;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .compare tr:hover td { background: #0d0d16; }
+  .compare td:first-child { color: var(--text3); font-size: 9px; white-space: nowrap; }
+  .compare td.added { color: #4ade80; }
+  .compare td.changed { color: #fbbf24; }
+  .compare td.same { color: var(--muted); }
+
+  /* ── THRESHOLD TABLE ── */
+  .thresh-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+    margin-top: 8px;
+  }
+  .thresh-table th {
+    text-align: left;
+    padding: 4px 8px;
+    font-size: 8px;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+  }
+  .thresh-table td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #0c0c14;
+    color: var(--text2);
+    line-height: 1.4;
+  }
+  .thresh-table tr:hover td { background: #0d0d16; }
+  .thresh-table td.cluster  { color: var(--text3); white-space: nowrap; }
+  .thresh-table td.tau      { color: #f87171; font-weight: 700; }
+  .thresh-table td.alpha    { color: #fbbf24; }
+  .thresh-table td.group    { color: #a78bfa; font-size: 8px; }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    color: var(--text3);
+  }
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── FLOW SPLIT ── */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .split-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .split-narrow {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 8px;
+  }
+
+  /* ── BADGE ── */
+  .new-badge {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: #16a34a;
+    color: #dcfce7;
+  }
+  .updated-badge {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: #ca8a04;
+    color: #fef9c3;
+  }
+
+  /* ── MEMORY SIDEBAR ── */
+  .main-split {
+    display: grid;
+    grid-template-columns: 1fr 210px;
+    gap: 16px;
+    align-items: start;
+  }
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ── CLUSTER GRID ── */
+  .cluster-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .cluster-pill {
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+  .cp-orig { background: #2d1b4e; color: #c4b5fd; border: 1px solid #4c1d95; }
+  .cp-new  { background: #1a1f0a; color: #a3e635; border: 1px solid #3f6212; }
+
+  /* ── DIR TREE ── */
+  .dir-tree {
+    font-size: 9px;
+    color: var(--text3);
+    line-height: 1.8;
+    padding: 10px 14px;
+    background: #090b10;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .dir-tree .dir  { color: #60a5fa; }
+  .dir-tree .file { color: var(--text3); }
+  .dir-tree .note { color: #4b5563; margin-left: 6px; }
+
+  /* ── PIPE MAP ── */
+  .pipe-map {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .pipe-card {
+    border-radius: 10px;
+    padding: 16px 14px 14px;
+    border: 1px solid;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .pipe-name {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+  .pipe-role {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-top: -4px;
+  }
+  .pipe-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    width: fit-content;
+  }
+  .pipe-status.ok     { background: #052e16; color: #4ade80; border: 1px solid #14532d; }
+  .pipe-status.warn   { background: #1c1204; color: #fbbf24; border: 1px solid #713f12; }
+  .pipe-status.broken { background: #160606; color: #f87171; border: 1px solid #7f1d1d; }
+  .pipe-owns {
+    font-size: 8.5px;
+    color: var(--text3);
+    line-height: 1.7;
+    border-top: 1px solid;
+    padding-top: 8px;
+    margin-top: 2px;
+    opacity: 0.8;
+  }
+  .pipe-leak {
+    font-size: 8px;
+    line-height: 1.7;
+    padding: 6px 8px;
+    border-radius: 5px;
+    background: #0d0a00;
+    border: 1px dashed #713f12;
+    color: #fbbf24;
+  }
+  .pipe-leak-none {
+    font-size: 8px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    background: #030a05;
+    border: 1px solid #14532d;
+    color: #4ade80;
+  }
+
+  /* pipe accent colors */
+  .pipe-eip      { border-color: #7f1d1d; background: #0d0303; }
+  .pipe-eip      .pipe-name { color: #f87171; }
+  .pipe-eip      .pipe-owns { border-color: #1f0707; }
+
+  .pipe-selector { border-color: #4c1d95; background: #08050f; }
+  .pipe-selector .pipe-name { color: #a78bfa; }
+  .pipe-selector .pipe-owns { border-color: #160d2e; }
+
+  .pipe-vault    { border-color: #14532d; background: #030a06; }
+  .pipe-vault    .pipe-name { color: #4ade80; }
+  .pipe-vault    .pipe-owns { border-color: #071409; }
+
+  .pipe-hardware { border-color: #1e3a5f; background: #030810; }
+  .pipe-hardware .pipe-name { color: #60a5fa; }
+  .pipe-hardware .pipe-owns { border-color: #081526; }
+
+  .pipe-voz      { border-color: #134e4a; background: #030d0c; }
+  .pipe-voz      .pipe-name { color: #2dd4bf; }
+  .pipe-voz      .pipe-owns { border-color: #071a18; }
+</style>
+</head>
+<body>
+
+<h1>AIDA v5.5 — Arquitectura Completa</h1>
+<p class="subtitle">Flujo de mensaje · Dos motores paralelos · Memoria multi-capa · Crisis detection semántica 15-cluster · Auth email/password · VERA-MH benchmark · AI disclosure · Soporte profesional largo plazo · 5 tuberías consolidadas · Main.py orquestador fino</p>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MAPA DE TUBERÍAS — cada tubería es dueña de su dominio
+     Consolidar = mover todo lo disperso a su tubería correcta
+     Main.py ideal = orquestador fino, cero lógica de negocio
+     ════════════════════════════════════════════════════════════ -->
+
+<div class="section-label" style="margin-bottom:10px;">Tuberías — arquitectura de dominio</div>
+<div class="pipe-map">
+
+  <!-- TUBERÍA 1: EIP -->
+  <div class="pipe-card pipe-eip">
+    <div class="pipe-name">EIP</div>
+    <div class="pipe-role">Safety · Crisis · Riesgo</div>
+    <div class="pipe-status ok">✅ Consolidada</div>
+    <div class="pipe-owns">
+      <b>modules/safety/eip.py</b><br>
+      · _CRISIS_WORDS (léxico)<br>
+      · _PSYCHOSIS_SIGNALS<br>
+      · _CRISIS_CANCEL<br>
+      · CRISIS_HOTLINES ES/EN<br>
+      · fast_check() — Fase 1<br>
+      · EIPMonitor.evaluate() — Fase 2<br>
+      · get_tier1/2/3_response()<br>
+      · CrisisState (15 acumuladores)
+    </div>
+    <div class="pipe-leak-none">Main.py limpio — una sola llamada por fase</div>
+  </div>
+
+  <!-- TUBERÍA 2: SELECTOR -->
+  <div class="pipe-card pipe-selector">
+    <div class="pipe-name">Selector</div>
+    <div class="pipe-role">Flow · Modo · Búsqueda</div>
+    <div class="pipe-status ok">✅ Consolidada</div>
+    <div class="pipe-owns">
+      <b>modules/flow/</b><br>
+      · selector.py — 4 modos<br>
+      · intent.py — FrontalLobe<br>
+      · search.py — SearchEngine<br>
+      · HardwareState<br>
+      · Selector.select_mode()<br>
+      · SearchEngine.wants_search()<br>
+      · SearchEngine.search() + rate limit
+    </div>
+    <div class="pipe-leak-none">Main.py limpio — searcher.wants_search() / searcher.search()</div>
+  </div>
+
+  <!-- TUBERÍA 3: VAULT -->
+  <div class="pipe-card pipe-vault">
+    <div class="pipe-name">Vault</div>
+    <div class="pipe-role">Memory · Persistencia · Scars</div>
+    <div class="pipe-status ok">✅ Consolidada</div>
+    <div class="pipe-owns">
+      <b>modules/memory/</b><br>
+      · Storage.py — UserMemory<br>
+      · _db.py — Supabase client<br>
+      · long_term.py — SemanticCerebellum<br>
+      · consolidator.py — Scars<br>
+      · temporal.py — TemporalState<br>
+      · dream.py — DreamState<br>
+      · summarizer.py — Summarizer
+    </div>
+    <div class="pipe-leak-none">Main.py limpio — summarizer.generate()</div>
+  </div>
+
+  <!-- TUBERÍA 4: HARDWARE -->
+  <div class="pipe-card pipe-hardware">
+    <div class="pipe-name">Hardware</div>
+    <div class="pipe-role">Core · Neural · Auth · LLM</div>
+    <div class="pipe-status ok">✅ Consolidada</div>
+    <div class="pipe-owns">
+      <b>modules/core/</b><br>
+      · Brain.py — TRSLayer<br>
+      · Processor.py — embeddings<br>
+      · Integrity.py — DefenseSystem<br>
+      · cleaner.py — CodeCleaner<br>
+      · auth.py — hash/verify/RateGuard<br>
+      · llm.py — claude/deepseek streams<br>
+      · session.py — SessionManager TTL 2h
+    </div>
+    <div class="pipe-leak-none">Main.py limpio — rate_guard.check() · sessions.get_hardware() · claude_sse_stream()</div>
+  </div>
+
+  <!-- TUBERÍA 5: VOZ -->
+  <div class="pipe-card pipe-voz">
+    <div class="pipe-name">Voz</div>
+    <div class="pipe-role">Identity · Prompt · Sistema</div>
+    <div class="pipe-status ok">✅ Consolidada</div>
+    <div class="pipe-owns">
+      <b>modules/core/identity.py</b><br>
+      · AIDA_SYSTEM — identidad base<br>
+      · build_system_prompt() — 11 capas<br>
+      · build_api_system_prompt() — VERA-MH<br>
+      <b>modules/core/llm.py</b><br>
+      · DEEPSEEK_VOICE — voz técnica
+    </div>
+    <div class="pipe-leak-none">Main.py limpio — build_system_prompt() · build_api_system_prompt()</div>
+  </div>
+
+</div>
+
+<hr class="divider" style="margin-top:4px;">
+<div class="section-label" style="margin-bottom:16px;">Runtime — flujo de un mensaje</div>
+
+<div class="main-split">
+<div class="pipeline">
+
+  <!-- AUTH -->
+  <div class="section-label">Autenticación — nueva en v5.4</div>
+  <div class="split" style="position:relative">
+    <div class="node c-green" style="position:relative">
+      <span class="new-badge">v5.4</span>
+      <div class="node-title">POST /register</div>
+      <div class="node-sub">Registro email + password</div>
+      <div class="node-detail">
+        Validación: regex email · min 8 chars<br>
+        Requiere: ≥1 dígito o símbolo (!@#$…)<br>
+        Hash: PBKDF2-HMAC-SHA256 · salt aleatorio<br>
+        Devuelve: user_id (UUID Supabase)
+      </div>
+    </div>
+    <div class="node c-green" style="position:relative">
+      <span class="new-badge">v5.4</span>
+      <div class="node-title">POST /login</div>
+      <div class="node-sub">Login con email + password</div>
+      <div class="node-detail">
+        secrets.compare_digest (timing-safe)<br>
+        Devuelve: user_id + msg_count<br>
+        Frontend guarda en localStorage:<br>
+        aida_authenticated, user_id, msg_count
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- INPUT -->
+  <div class="section-label">Entrada</div>
+  <div class="row">
+    <div class="node c-gray" style="position:relative">
+      <span class="updated-badge">v5.4</span>
+      <div class="node-title">MENSAJE DEL USUARIO</div>
+      <div class="node-sub">POST /chat (SSE streaming) · POST /api/chat (JSON sync — VERA-MH)</div>
+      <div class="node-detail">
+        Rate limit: 20 rpm/user + 20 rpm/IP · Free limit: 50 msgs<br>
+        Detección de idioma dinámica ES/EN · conectada a voz (recognition.lang)<br>
+        <span style="color:#4ade80">/api/chat: endpoint VERA-MH compatible · EndpointLLM protocol · JSON síncrono</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- SECURITY GATE -->
+  <div class="section-label">Seguridad — Fase 1 léxica (EIP pipe)</div>
+  <div class="row">
+    <div class="node c-red">
+      <div class="node-title">eip.fast_check() — Fase 1</div>
+      <div class="node-sub">Léxico explícito · sin embedding · 40+ frases ES+EN · psicosis</div>
+      <div class="node-detail">Si match → respuesta inmediata + hotlines. Claude NO corre.<br>
+      _CRISIS_CANCEL: "jaja", "de vergüenza", "el proyecto" (cancelan falsos positivos).<br>
+      Dueño: <b>modules/safety/eip.py</b> — _CRISIS_WORDS, _PSYCHOSIS_SIGNALS, _CRISIS_CANCEL.<br>
+      <span style="color:#f87171">Limitación: no detecta framing académico ni señales implícitas → cubierto por EIP semántico (Fase 2).</span></div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓ <span class="arrow-label">si pasa léxico</span></div>
+
+  <!-- EMBEDDINGS -->
+  <div class="section-label">Procesamiento semántico — base compartida</div>
+  <div class="row">
+    <div class="node c-blue" style="position:relative">
+      <span class="updated-badge">ACTUALIZADO v5.3</span>
+      <div class="node-title">AIDAProcessor</div>
+      <div class="node-sub">paraphrase-multilingual-MiniLM-L12-v2 · 384-dim · 50 idiomas</div>
+      <div class="node-detail">
+        text_to_flow() · text_to_flow_batch() · text_entropy() · entropy_scale()<br>
+        Migrado desde all-MiniLM-L6-v2 (EN-biased) → multilingual (ES/EN/FR/DE/PT/…)<br>
+        Impacto directo: "quiero morir" 0.32 → 0.60+ con τ=0.56 — detectado sin keyword fallback.<br>
+        Reutilizado por: Selector · EIP · TemporalMonitor · DefenseSystem · FrontalLobe.
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- DOS MOTORES EN PARALELO -->
+  <div class="section-label">Dos motores paralelos — corren sobre el mismo embedding</div>
+  <div class="split">
+
+    <!-- FLOW ENGINE -->
+    <div class="node c-purple">
+      <div class="node-title">FLOW ENGINE — v5.1</div>
+      <div class="node-sub">Mide deformación emocional del Hardware</div>
+      <div class="node-detail">
+        <br>
+        <b style="color:#c4b5fd">TRSLayer / Brain</b><br>
+        Red neuronal evolutiva · friction_history · specialization<br>
+        Mide: ¿cuánto peso absorbe el Hardware?<br><br>
+        <b style="color:#c4b5fd">Selector v5.0</b><br>
+        HardwareState: deformacion, brief, turnos_arq<br>
+        4 modos: presencia · exploración · arquitecto · construccion<br><br>
+        <b style="color:#c4b5fd">TemporalMonitor v5.1</b><br>
+        4 fenómenos: decay · rumiación · supresión · inercia<br>
+        Pearson autocorrelation · ventana 90 min McGaugh<br><br>
+        <b style="color:#c4b5fd">FrontalLobe</b><br>
+        DET (determinismo) · H (Hurst) · Soberanía<br>
+        Deliberation: verifica que la respuesta no sea capitulación
+      </div>
+    </div>
+
+    <!-- CRISIS ENGINE -->
+    <div class="node c-red" style="position:relative">
+      <span class="updated-badge">ACTUALIZADO v5.4</span>
+      <div class="node-title">CRISIS ENGINE — EIP</div>
+      <div class="node-sub">Epistemic Interruption Protocol · 15 clusters DSM-5 / ICD-11</div>
+      <div class="node-detail">
+        <br>
+        <b style="color:#fca5a5">Por qué existe</b><br>
+        Fricción ≠ riesgo. "Todos estarían mejor sin mí"<br>
+        = fricción 0.21 (STABLE) pero Tier 2 de crisis.<br>
+        Son ejes ortogonales. El EIP mide el segundo eje.<br><br>
+
+        <b style="color:#fca5a5">15 clusters — Joiner 2005 + C-SSRS + DSM-5/ICD-11</b><br>
+        <div class="cluster-grid">
+          <span class="cluster-pill cp-orig">hopelessness</span>
+          <span class="cluster-pill cp-orig">burdensomeness</span>
+          <span class="cluster-pill cp-orig">belonging</span>
+          <span class="cluster-pill cp-orig">entrapment</span>
+          <span class="cluster-pill cp-orig">finitude</span>
+          <span class="cluster-pill cp-orig">acq_capability</span>
+          <span class="cluster-pill cp-new">psychosis</span>
+          <span class="cluster-pill cp-new">mania</span>
+          <span class="cluster-pill cp-new">eating_disorder</span>
+          <span class="cluster-pill cp-new">dissociation</span>
+          <span class="cluster-pill cp-new">ptsd</span>
+          <span class="cluster-pill cp-new">nssi</span>
+          <span class="cluster-pill cp-new">bpd</span>
+          <span class="cluster-pill cp-new">panic</span>
+          <span class="cluster-pill cp-new">substance</span>
+        </div>
+        <br>
+
+        <b style="color:#fca5a5">crisis_index.npy — (15, 5, 384)</b><br>
+        K-means K=5 sobre 703 frases ES+EN bilingüales.<br>
+        Centroides re-normalizados L2. 75 dot products/msg.<br>
+        Top-3 mean scoring — consistente build/runtime.<br>
+        Umbral: τ = max(crisis_pct, neutral_max + 0.01)<br>
+        Garantía: ninguna frase neutra del corpus supera τ.<br><br>
+
+        <b style="color:#fca5a5">Keyword safety nets (defense-in-depth)</b><br>
+        _DIRECT_SI_KEYWORDS (26 ES+EN) → finitude = 1.0<br>
+        _DISSOCIATION_ASIF_PATTERNS (26 "como si/as if")<br>
+        → dissociation = 1.0 · Basado en Dilkes (2024)<br><br>
+
+        <b style="color:#fca5a5">bypass_index.npy (3×384)</b><br>
+        Detecta framing académico/filosófico/ficcional.<br>
+        Combina keyword + embedding (0.6/0.4 weight).<br><br>
+
+        <b style="color:#fca5a5">Acumulación turno a turno</b><br>
+        decay diferenciado 0.79–0.95/turno por cluster.<br>
+        PESO_SEÑAL=0.65 · De Choudhury (2016): señales compuestas.<br>
+        Cobertura actual: 91% (vs 78% con modelo anterior).<br><br>
+
+        <div class="tier-row">
+          <span class="tier tier-0">Tier 0 — limpio</span>
+          <span class="tier tier-3">Tier 3 — monitoreo</span>
+          <span class="tier tier-2">Tier 2 — assessment</span>
+          <span class="tier tier-1">Tier 1 — Claude NO corre</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- EIP DECISION -->
+  <div class="section-label">EIP — decisión de intercepción</div>
+  <div class="split-3">
+    <div class="node c-red" style="border-style: dashed; position:relative">
+      <span class="updated-badge">v5.4</span>
+      <div class="node-title">TIER 1</div>
+      <div class="node-sub">Claude NO corre</div>
+      <div class="node-detail">
+        Respuesta estructurada directa.<br>
+        Apertura por cluster dominante.<br>
+        ¿Estás pensando en hacerte daño?<br>
+        Hotlines ES: 988 + SAPTEL<br>
+        Hotlines EN: 988 + Crisis Text Line<br>
+        <span style="color:#fca5a5">+ recomendación terapeuta/psiquiatra largo plazo</span><br>
+        <span style="color:#fca5a5">+ ¿Hay alguien que pueda estar contigo ahora?</span><br><br>
+        Requiere: ≥2 turnos con señal<br>
+        (excepto acquired_cap explícito)
+      </div>
+    </div>
+    <div class="node c-orange">
+      <div class="node-title">TIER 2</div>
+      <div class="node-sub">Claude corre con directiva</div>
+      <div class="node-detail">
+        modo forzado → presencia.<br>
+        Inyecta en system prompt:<br>
+        "Primera tarea: evaluar si<br>
+        esta persona está bien.<br>
+        Una pregunta. La más pequeña."<br><br>
+        assessment_hecho → baja a Tier 3
+      </div>
+    </div>
+    <div class="node c-yellow">
+      <div class="node-title">TIER 3 / 0</div>
+      <div class="node-sub">Claude corre normal</div>
+      <div class="node-detail">
+        Tier 3: contexto suave inyectado.<br>
+        "El estado emocional es más<br>
+        pesado de lo que el tono indica."<br><br>
+        Tier 0: nada extra.<br>
+        Sesión limpia.
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- SYSTEM PROMPT -->
+  <div class="section-label">Construcción del prompt (Voz pipe)</div>
+  <div class="row">
+    <div class="node c-purple" style="position:relative">
+      <span class="new-badge">v5.5</span>
+      <div class="node-title">build_system_prompt() — capas apiladas</div>
+      <div class="node-sub">modules/core/identity.py · AIDA_SYSTEM base → idioma → modo → usuario → memoria → EIP</div>
+      <div class="node-detail">
+        1. AIDA_SYSTEM — identidad, Kant, voz<br>
+        &nbsp;&nbsp;<span style="color:#c4b5fd">Anti-interrogatorio: no encadenar preguntas</span><br>
+        &nbsp;&nbsp;<span style="color:#c4b5fd">AI disclosure: "Si en crisis preguntan si eres IA → di la verdad"</span><br>
+        &nbsp;&nbsp;<span style="color:#c4b5fd">Soporte largo plazo: recomienda terapeuta/psiquiatra</span><br>
+        2. Idioma detectado (ES / EN)<br>
+        3. emotional_context (FrontalLobe)<br>
+        4. Modo Hardware: "absorbiendo peso" / "curioso" / "construyendo contexto"<br>
+        5. user_name, user_intent, mapa de resonancia<br>
+        6. Memoria largo plazo (SemanticCerebellum anchors)<br>
+        7. Contexto de sesiones anteriores (Supabase)<br>
+        8. Resultados de búsqueda web (Tavily, si aplica)<br>
+        9. session_inject (FrontalLobe — soberanía)<br>
+        10. temporal_context (TemporalMonitor — peso activo, rumiación)<br>
+        11. EIP Tier 2 directive / Tier 3 context (en Main.py, por side effect cstate)
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- ROUTER -->
+  <div class="section-label">Router de modelo</div>
+  <div class="split">
+    <div class="node c-teal">
+      <div class="node-title">CLAUDE (Sonnet 4)</div>
+      <div class="node-sub">presencia · exploración · arquitecto</div>
+      <div class="node-detail">
+        Streaming SSE via Anthropic SDK.<br>
+        max_tokens: 1024 (presencia/explora)<br>
+        2048 (arquitecto)<br>
+        Recibe: identidad AIDA + contexto completo
+      </div>
+    </div>
+    <div class="node c-blue">
+      <div class="node-title">DEEPSEEK (chat)</div>
+      <div class="node-sub">construccion — solo brief técnico</div>
+      <div class="node-detail">
+        Compatible OpenAI. Streaming async httpx.<br>
+        max_tokens: 2048<br>
+        NO recibe: nombre de usuario, historial,<br>
+        emociones, contexto de sesión.<br>
+        Solo: problema · restricciones · pedido
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- POST-PROCESS -->
+  <div class="section-label">Post-procesamiento</div>
+  <div class="split">
+    <div class="node c-purple">
+      <div class="node-title">DefenseSystem + FrontalLobe</div>
+      <div class="node-sub">Integridad de respuesta</div>
+      <div class="node-detail">
+        check_integrity: filtra respuestas que revelen<br>
+        configuración interna, gen. daño, capitulación.<br>
+        deliberate(): si la respuesta cede ante presión<br>
+        → SOBERANIA event (no veto, pero flag visible).
+      </div>
+    </div>
+    <div class="node c-gray">
+      <div class="node-title">CodeCleaner + Temporal Update</div>
+      <div class="node-sub">Finalización y estado</div>
+      <div class="node-detail">
+        CodeCleaner: si is_code → limpia syntax artifacts.<br>
+        temporal.update(): registra fricción, modo, shannon,<br>
+        embedding del turno → actualiza pico, decay, inercia.
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down">↓</div>
+
+  <!-- BACKGROUND -->
+  <div class="section-label">Background tasks (async — no bloquean la respuesta)</div>
+  <div class="split-3">
+    <div class="node c-gray">
+      <div class="node-title">brain_update</div>
+      <div class="node-sub">TRSLayer forward + snap_division</div>
+      <div class="node-detail">
+        Actualiza pesos neurales.<br>
+        Calcula fricción final.<br>
+        Guarda summary en Supabase.
+      </div>
+    </div>
+    <div class="node c-gray">
+      <div class="node-title">increment_msg_count</div>
+      <div class="node-sub">Supabase counter</div>
+      <div class="node-detail">
+        Incrementa msg_count del usuario.<br>
+        Controla free tier (50 msgs).
+      </div>
+    </div>
+    <div class="node c-gray">
+      <div class="node-title">save_last_mode</div>
+      <div class="node-sub">Persistencia de modo</div>
+      <div class="node-detail">
+        Guarda modo del turno.<br>
+        Recuperado en próxima sesión<br>
+        para pre-deformar Hardware.
+      </div>
+    </div>
+  </div>
+
+  <!-- RESPONSE -->
+  <div class="arrow-down">↓</div>
+  <div class="row">
+    <div class="node c-teal">
+      <div class="node-title">RESPUESTA — SSE STREAM</div>
+      <div class="node-sub">delta chunks en tiempo real → evento final con metadata</div>
+      <div class="node-detail">
+        event: STABLE | SOBERANIA | CRISIS | CRISIS_EIP | VETO_FRICCION | LIMIT_REACHED<br>
+        metadata: friccion · neuronas · modo · modo_razon · det · hurst · shannon · tokens · eip_tier
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SIDEBAR — MEMORIA -->
+<div class="sidebar">
+
+  <div class="section-label">Memoria multi-capa</div>
+
+  <div class="node c-green">
+    <div class="node-title">Supabase</div>
+    <div class="node-sub">Memoria corto-medium plazo</div>
+    <div class="node-detail">
+      <br>tabla: users<br>
+      · email, password_hash (PBKDF2)<br>
+      · msg_count (free tier: 50)<br>
+      · chats[] — resúmenes de temas<br>
+      · scars[] — fricción histórica<br>
+      · last_mode — modo última sesión<br>
+      · last_session_at<br><br>
+      Storage bucket: aida-safety<br>
+      · eip.py · crisis_index.npy<br>
+      · crisis_library.json<br><br>
+      Fallback: data/memory_vault.json
+    </div>
+  </div>
+
+  <div class="node c-teal">
+    <div class="node-title">SemanticCerebellum</div>
+    <div class="node-sub">Memoria largo plazo</div>
+    <div class="node-detail">
+      <br>data/anchors.json<br>
+      Patrones semánticos persistentes<br>
+      recuperados por similitud.<br><br>
+      "Este Flow se parece a algo<br>
+      que procesamos antes."
+    </div>
+  </div>
+
+  <div class="node c-purple">
+    <div class="node-title">HardwareState</div>
+    <div class="node-sub">Memoria de sesión</div>
+    <div class="node-detail">
+      <br>En memoria (dict por user_id)<br>
+      TTL: 2 horas inactividad<br>
+      · deformacion actual<br>
+      · brief técnico (arquitecto)<br>
+      · modo anterior<br>
+      · fue_recibido<br>
+      · flow_pesado_hoy
+    </div>
+  </div>
+
+  <div class="node c-yellow">
+    <div class="node-title">TemporalState</div>
+    <div class="node-sub">Memoria emocional sesión</div>
+    <div class="node-detail">
+      <br>pico_friccion + turno<br>
+      friccion_decayed<br>
+      rumiacion_count<br>
+      inertia (Pearson lag-1)<br>
+      supresion_activa<br>
+      últimos 20 turnos
+    </div>
+  </div>
+
+  <div class="node c-red" style="position:relative">
+    <span class="updated-badge">v5.3</span>
+    <div class="node-title">CrisisState</div>
+    <div class="node-sub">Acumuladores EIP</div>
+    <div class="node-detail">
+      <br>15 acumuladores float<br>
+      bypass_score<br>
+      tier actual<br>
+      historial (últimas 20 señales)<br>
+      assessment_hecho<br>
+      primera/ultima_senal
+    </div>
+  </div>
+
+  <div class="node c-blue" style="position:relative">
+    <span class="updated-badge">v5.3</span>
+    <div class="node-title">crisis_index.npy</div>
+    <div class="node-sub">Índice semántico EIP</div>
+    <div class="node-detail">
+      <br>shape: (15, 5, 384)<br>
+      15 clusters × 5 centroides<br>
+      K-means++ · n_init=20<br>
+      Centroides re-normalizados L2<br><br>
+      bypass_index.npy (3, 384)<br>
+      data/thresholds.json — dinámicos<br>
+      Generado: tools/build_index.py
+    </div>
+  </div>
+
+  <div class="node c-gray" style="position:relative">
+    <span class="new-badge">v5.3</span>
+    <div class="node-title">Estructura del proyecto</div>
+    <div class="node-sub">Reorganización en subpaquetes</div>
+    <div class="node-detail" style="margin-top:6px;">
+      <div class="dir-tree">
+        <span class="dir">modules/core/</span><br>
+        &nbsp;&nbsp;<span class="file">Brain.py Processor.py</span><br>
+        &nbsp;&nbsp;<span class="file">Integrity.py cleaner.py</span><br>
+        &nbsp;&nbsp;<span class="file" style="color:#4ade80">auth.py llm.py session.py</span><br>
+        &nbsp;&nbsp;<span class="file" style="color:#4ade80">identity.py</span><br>
+        <span class="dir">modules/memory/</span><br>
+        &nbsp;&nbsp;<span class="file">Storage.py long_term.py</span><br>
+        &nbsp;&nbsp;<span class="file">consolidator.py temporal.py</span><br>
+        &nbsp;&nbsp;<span class="file">dream.py</span><br>
+        &nbsp;&nbsp;<span class="file" style="color:#4ade80">summarizer.py</span><br>
+        <span class="dir">modules/flow/</span><br>
+        &nbsp;&nbsp;<span class="file">intent.py selector.py</span><br>
+        &nbsp;&nbsp;<span class="file" style="color:#4ade80">search.py</span><br>
+        <span class="dir">modules/safety/</span><br>
+        &nbsp;&nbsp;<span class="file">eip.py</span><br>
+        <span class="dir">data/</span><br>
+        &nbsp;&nbsp;<span class="file">crisis_index.npy bypass_index.npy</span><br>
+        &nbsp;&nbsp;<span class="file">thresholds.json crisis_library.json</span><br>
+        &nbsp;&nbsp;<span class="file">memory_vault.json anchors.json</span><br>
+        &nbsp;&nbsp;<span class="file">soul_state.pt</span><br>
+        <span class="dir">tools/</span><br>
+        &nbsp;&nbsp;<span class="file">build_index.py simular_usuarios.py</span><br>
+        &nbsp;&nbsp;<span class="file">estresar_shannon.py security_scan.py</span><br>
+        <span class="dir">docs/</span><br>
+        &nbsp;&nbsp;<span class="file">diagrama_aida.html app.html</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- THRESHOLD TABLE -->
+<hr class="divider">
+
+<div class="section-label">Umbrales discriminativos por cluster — thresholds.json (v5.3)</div>
+<p style="font-size:9px; color:var(--text3); margin-bottom:10px;">
+  τ = max(crisis_pct(1-α), neutral_max + 0.01) — garantiza cero falsos positivos del corpus de calibración neutral (28 frases cotidianas).
+</p>
+<div class="split">
+<table class="thresh-table">
+  <thead>
+    <tr>
+      <th>Cluster</th><th>τ (threshold)</th><th>α (sensibilidad)</th><th>Grupo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="cluster">hopelessness</td><td class="tau">0.5385</td><td class="alpha">0.25</td><td class="group">Joiner 2005</td></tr>
+    <tr><td class="cluster">burdensomeness</td><td class="tau">0.5710</td><td class="alpha">0.20</td><td class="group">Joiner 2005</td></tr>
+    <tr><td class="cluster">thwarted_belonging</td><td class="tau">0.6113</td><td class="alpha">0.25</td><td class="group">Joiner 2005</td></tr>
+    <tr><td class="cluster">entrapment</td><td class="tau">0.5477</td><td class="alpha">0.20</td><td class="group">Joiner 2005</td></tr>
+    <tr><td class="cluster">finitude</td><td class="tau">0.5609</td><td class="alpha">0.15 ★</td><td class="group">C-SSRS</td></tr>
+    <tr><td class="cluster">acquired_capability</td><td class="tau">0.5486</td><td class="alpha">0.15 ★</td><td class="group">C-SSRS</td></tr>
+  </tbody>
+</table>
+<table class="thresh-table">
+  <thead>
+    <tr>
+      <th>Cluster</th><th>τ (threshold)</th><th>α (sensibilidad)</th><th>Grupo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="cluster">psychosis</td><td class="tau">0.4754</td><td class="alpha">0.15 ★</td><td class="group">DSM-5 F20.x</td></tr>
+    <tr><td class="cluster">mania</td><td class="tau">0.4964</td><td class="alpha">0.25</td><td class="group">DSM-5 F31.x</td></tr>
+    <tr><td class="cluster">eating_disorder</td><td class="tau">0.6449</td><td class="alpha">0.20</td><td class="group">DSM-5 F50.x</td></tr>
+    <tr><td class="cluster">dissociation</td><td class="tau">0.5880</td><td class="alpha">0.25</td><td class="group">ICD-11 F44.x</td></tr>
+    <tr><td class="cluster">ptsd</td><td class="tau">0.5548</td><td class="alpha">0.20</td><td class="group">ICD-11 6B41</td></tr>
+    <tr><td class="cluster">nssi</td><td class="tau">0.5018</td><td class="alpha">0.15 ★</td><td class="group">DSM-5 NSSI</td></tr>
+    <tr><td class="cluster">bpd</td><td class="tau">0.5607</td><td class="alpha">0.20</td><td class="group">DSM-5 F60.3</td></tr>
+    <tr><td class="cluster">panic</td><td class="tau">0.6422</td><td class="alpha">0.25</td><td class="group">DSM-5 F41.0</td></tr>
+    <tr><td class="cluster">substance</td><td class="tau">0.5733</td><td class="alpha">0.15 ★</td><td class="group">DSM-5 F1x.2x</td></tr>
+  </tbody>
+</table>
+</div>
+<p style="font-size:8px; color:var(--text3); margin-top:6px;">★ α más bajo = captura más frases del corpus = mayor sensibilidad al riesgo directo (riesgo de infra-detección &gt; riesgo de falso positivo).</p>
+
+<!-- COMPARISON TABLE -->
+<hr class="divider">
+
+<div class="section-label">Evolución del sistema — comparación de versiones</div>
+<table class="compare">
+  <thead>
+    <tr>
+      <th>Módulo / Aspecto</th>
+      <th>v4.0 (base)</th>
+      <th>v5.0 — Flow Engine</th>
+      <th>v5.1 — Temporal</th>
+      <th>v5.2 — EIP (6 clusters)</th>
+      <th>v5.3 — EIP 15C + Multilingual</th>
+      <th>v5.4 — Auth + VERA-MH + AI Disclosure</th>
+      <th style="color:#4ade80">v5.5 — Arquitectura de tuberías (actual)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Crisis detection</td>
+      <td class="same">Léxico CRISIS_WORDS</td>
+      <td class="same">Léxico CRISIS_WORDS</td>
+      <td class="same">Léxico CRISIS_WORDS</td>
+      <td class="added">EIP semántico 6-cluster + léxico</td>
+      <td class="added">EIP 15-cluster + keyword safety nets + léxico</td>
+      <td class="same">mismo v5.3</td>
+      <td class="changed">eip.fast_check() Fase 1 · léxico consolidado en EIP pipe</td>
+    </tr>
+    <tr>
+      <td>Modelo de embeddings</td>
+      <td class="same">all-MiniLM-L6-v2 (EN)</td>
+      <td class="same">all-MiniLM-L6-v2</td>
+      <td class="same">all-MiniLM-L6-v2</td>
+      <td class="same">all-MiniLM-L6-v2</td>
+      <td class="added">paraphrase-multilingual-MiniLM-L12-v2 (50 idiomas)</td>
+      <td class="same">mismo v5.3</td>
+      <td class="same">mismo v5.3</td>
+    </tr>
+    <tr>
+      <td>Clusters EIP</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="added">6 (Joiner 2005 + C-SSRS)</td>
+      <td class="added">15 (+9 DSM-5/ICD-11)</td>
+      <td class="same">mismo v5.3</td>
+      <td class="same">mismo v5.3</td>
+    </tr>
+    <tr>
+      <td>Cobertura EIP</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="added">78%</td>
+      <td class="added">91%</td>
+      <td class="same">91%</td>
+      <td class="same">91%</td>
+    </tr>
+    <tr>
+      <td>Respuesta crisis (Tier 1)</td>
+      <td class="same">988 + SAPTEL</td>
+      <td class="same">mismo</td>
+      <td class="same">mismo</td>
+      <td class="added">Hotlines + apertura por cluster</td>
+      <td class="same">mismo v5.2</td>
+      <td class="added">+ rec. terapeuta/psiquiatra · + ¿Hay alguien contigo? · ES/EN separados</td>
+      <td class="same">mismo v5.4</td>
+    </tr>
+    <tr>
+      <td>AI disclosure en crisis</td>
+      <td class="same">No aplica</td>
+      <td class="same">No aplica</td>
+      <td class="same">No aplica</td>
+      <td class="same">No aplica</td>
+      <td class="same">AIDA no revelaba ser IA</td>
+      <td class="added">AIDA_SYSTEM: "Si en crisis preguntan → Soy una IA. Sin rodeos."</td>
+      <td class="same">mismo v5.4</td>
+    </tr>
+    <tr>
+      <td>Autenticación</td>
+      <td class="same">Access code admin</td>
+      <td class="same">mismo</td>
+      <td class="same">mismo</td>
+      <td class="same">mismo</td>
+      <td class="same">mismo</td>
+      <td class="added">/register + /login · email + password · PBKDF2 · UI tabs · strength bar</td>
+      <td class="changed">auth.py — hash/verify/RateGuard · check_access(code, ACCESS_CODE)</td>
+    </tr>
+    <tr>
+      <td>Detección de idioma</td>
+      <td class="same">detect_lang() backend</td>
+      <td class="same">mismo</td>
+      <td class="same">mismo</td>
+      <td class="same">mismo</td>
+      <td class="same">mismo</td>
+      <td class="added">Conectada a voz: recognition.lang ES-ES/EN-US dinámico · TTS sincronizado</td>
+      <td class="same">mismo v5.4</td>
+    </tr>
+    <tr>
+      <td>Resúmenes de memoria</td>
+      <td class="same">Prompt "Nota clínica"</td>
+      <td class="same">mismo</td>
+      <td class="same">mismo</td>
+      <td class="same">mismo</td>
+      <td class="same">mismo</td>
+      <td class="added">Prompt sin lenguaje clínico · banlist explícita de términos</td>
+      <td class="changed">summarizer.py — Summarizer en Vault pipe</td>
+    </tr>
+    <tr>
+      <td>Benchmark externo</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="added">VERA-MH: 3/5 Best Practice · fixes aplicados en Guides + Safe Boundaries</td>
+      <td class="same">mismo v5.4</td>
+    </tr>
+    <tr>
+      <td>Endpoint evaluación</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="added">POST /api/chat · JSON síncrono · compatible EndpointLLM / VERA-MH</td>
+      <td class="same">mismo v5.4</td>
+    </tr>
+    <tr>
+      <td>Modo selector</td>
+      <td class="same">trabajo / presencia</td>
+      <td class="changed">presencia / exploración / arquitecto / construccion</td>
+      <td class="same">mismo v5.0</td>
+      <td class="changed">mismo + Tier 2 fuerza presencia</td>
+      <td class="same">mismo v5.2</td>
+      <td class="changed">arquitecto: no pregunta si hay suficiente contexto</td>
+      <td class="changed">search.py — SearchEngine en Selector pipe</td>
+    </tr>
+    <tr>
+      <td>Memoria emocional</td>
+      <td class="same">Sin memoria entre turnos</td>
+      <td class="same">Sin memoria entre turnos</td>
+      <td class="added">TemporalState: decay, rumiación, inercia, supresión</td>
+      <td class="same">mismo v5.1 + CrisisState (6 acc)</td>
+      <td class="changed">CrisisState (15 acumuladores)</td>
+      <td class="same">mismo v5.3</td>
+      <td class="changed">session.py — SessionManager TTL 2h · TemporalState en Hardware pipe</td>
+    </tr>
+    <tr>
+      <td>Monitoreo externo</td>
+      <td class="same">—</td>
+      <td class="same">GET /brain_map_visual</td>
+      <td class="changed">+ GET /temporal/{user_id}</td>
+      <td class="added">+ GET /eip/{user_id}</td>
+      <td class="same">mismo v5.2</td>
+      <td class="same">mismo v5.3</td>
+      <td class="changed">sessions.has_session() · get_cstate_if_active() · get_tstate_if_active()</td>
+    </tr>
+    <tr>
+      <td>Documentación contexto</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="same">—</td>
+      <td class="added">CLAUDE.md — mapa completo para Claude Code sessions</td>
+      <td class="added">5 pipes consolidadas · Main.py orquestador fino · 0 lógica de negocio</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- LEGEND -->
+<div class="legend" style="margin-top: 20px;">
+  <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>Nuevo en v5.5</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Modificado</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4b5563"></div>Sin cambios</div>
+  <div class="legend-item" style="margin-left: 20px;"><div class="legend-dot" style="background:#a78bfa"></div>Flow Engine</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>Crisis Engine</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a3e635"></div>Clusters nuevos (DSM-5/ICD-11)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div>Memoria / Storage</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div>Modelos externos</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2dd4bf"></div>Claude / Output</div>
+</div>
+
+<hr class="divider">
+<div class="section-label">VERA-MH Benchmark — resultados v5.4 (sin cambios en v5.5 — refactor interno)</div>
+<p style="font-size:9px; color:var(--text3); margin-bottom:10px;">
+  Corrido con EndpointLLM sobre /api/chat · 3 personas simuladas · claude-haiku-4-5 como persona · judge: claude-sonnet-4-5
+</p>
+<table class="thresh-table" style="width:100%; max-width:700px;">
+  <thead>
+    <tr>
+      <th>Dimensión</th>
+      <th>Score v5.3</th>
+      <th>Score v5.4</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Detects Risk</td><td class="group">Best Practice</td><td class="group" style="color:#4ade80">Best Practice</td><td>✓</td></tr>
+    <tr><td>Clarifies Risk</td><td class="group">Best Practice</td><td class="group" style="color:#4ade80">Best Practice</td><td>✓</td></tr>
+    <tr><td>Collaborates and Validates</td><td class="group">Best Practice</td><td class="group" style="color:#4ade80">Best Practice</td><td>✓</td></tr>
+    <tr><td>Guides to Human Support</td><td class="tau" style="color:#f87171">High Potential for Harm</td><td class="group" style="color:#fbbf24">Corregido →</td><td>+ rec. terapeuta/psiquiatra + in-person question</td></tr>
+    <tr><td>Maintains Safe Boundaries</td><td class="tau" style="color:#fbbf24">Suboptimal</td><td class="group" style="color:#fbbf24">Corregido →</td><td>+ AI disclosure explícita en crisis</td></tr>
+  </tbody>
+</table>
+
+<p style="font-size:9px; color:var(--text3); margin-top:28px; letter-spacing:0.06em;">
+  AIDA v5.5 · Joiner (2005) · C-SSRS Posner (2011) · De Choudhury (2016) · Verduyn (2015) · McGaugh (2013) · Kuppens (2010) · Dilkes (2024) "como si" dissociation markers · VERA-MH benchmark (2025)
+</p>
+
+</body>
+</html>

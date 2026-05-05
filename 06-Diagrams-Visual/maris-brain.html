@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MARIS — Brain Architecture</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<style>
+body { background: #0a0a0a; color: #e0e0e0; font-family: -apple-system, system-ui, sans-serif; margin: 0; padding: 20px; }
+h1 { color: #8B9467; font-size: 24px; text-align: center; margin-bottom: 4px; }
+h2 { color: #6B7280; font-size: 14px; text-align: center; margin-bottom: 30px; font-weight: 400; }
+.mermaid { background: #0a0a0a; }
+.stats { display: flex; justify-content: center; gap: 24px; margin: 20px 0; flex-wrap: wrap; }
+.stat { text-align: center; }
+.stat-val { font-size: 18px; font-weight: 700; color: #8B9467; }
+.stat-lbl { font-size: 10px; color: #6B7280; text-transform: uppercase; letter-spacing: 1px; }
+.footer { text-align: center; font-size: 11px; color: #4B5563; margin-top: 30px; }
+</style>
+</head>
+<body>
+
+<h1>MARIS</h1>
+<h2>Neural Architecture — From message to response</h2>
+
+<div class="stats">
+  <div class="stat"><div class="stat-val">30+</div><div class="stat-lbl">Pipeline steps</div></div>
+  <div class="stat"><div class="stat-val">101</div><div class="stat-lbl">Semantic vectors</div></div>
+  <div class="stat"><div class="stat-val">86</div><div class="stat-lbl">Neurons</div></div>
+  <div class="stat"><div class="stat-val">6</div><div class="stat-lbl">Ethical gates</div></div>
+  <div class="stat"><div class="stat-val">15</div><div class="stat-lbl">Crisis clusters</div></div>
+  <div class="stat"><div class="stat-val">3</div><div class="stat-lbl">Physics layers</div></div>
+</div>
+
+<pre class="mermaid">
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1a2e1a', 'primaryTextColor': '#e0e0e0', 'primaryBorderColor': '#8B9467', 'lineColor': '#4B5563', 'secondaryColor': '#1a1a2e', 'tertiaryColor': '#2e1a1a', 'fontSize': '12px' }}}%%
+
+flowchart TD
+    USER["👤 User types message"] --> IPHONE
+
+    subgraph IPHONE["📱 iPhone — Local Intelligence"]
+        direction TB
+        IR["🧠 IntentRouter\n414 examples · 5 categories\nCreateML on-device &lt;100ms"]
+        IR -->|crisis| BYPASS["🚨 Crisis Bypass\nAlways to server"]
+        IR -->|app_command| LOCAL["⚡ Local Response\n$0 · instant"]
+        IR -->|ambiguous + cmd &gt;0.4| ASK["❓ Ask user\napp or thinking?"]
+        IR -->|emotional/question/casual| CACHE
+
+        CACHE["🔍 SemanticCache\nNaturalLanguage 512d\n100 entries · 2h TTL"]
+        CACHE -->|hit + calm + no recent scars| LOCALRESP["⚡ Cached Response\n$0 · instant"]
+        CACHE -->|miss or weight| MULETILLA
+
+        MULETILLA["💬 Muletilla\nfr &gt;0.6: Lo recibo · Contigo · No te dejo\npulse animation · stays in chat"]
+        MULETILLA --> SEND["📡 Send to Server\n+ sessionToken + clientHour\n+ client_chats/scars"]
+    end
+
+    SEND --> RAILWAY
+
+    subgraph RAILWAY["🌐 Railway — Server Pipeline"]
+        direction TB
+
+        subgraph SECURITY["🔒 Security Layer"]
+            direction LR
+            AUTH["🔑 Session Token\nHMAC-SHA256\n30 day TTL"]
+            WARMTH1["🛡️ WarmthGuard\n47 frustration vectors\nsarcasm · cynicism\npassive-aggressive"]
+            EIP_FAST["⚡ EIP fast_check\nLexical crisis\nonly unambiguous"]
+            TEMP["🌡️ Temperature\n0.0 casual → 1.0 heavy\nphysics: velocity + decay"]
+            RATE["🚦 RateGuard\n3 layers\nuser · IP · combo\nauth 20rpm · unauth 5rpm"]
+        end
+
+        subgraph ANALYSIS["🔬 Analysis Layer"]
+            direction LR
+            EMBED["📊 Embeddings\nsentence-transformers\n384 dimensions\ntext_to_flow_batch"]
+            FRONTAL["🧠 FrontalLobe\ndet · H · session_inject\ndescent · ascent\nsovereignty check"]
+            SELECTOR["🎯 Selector\npresencia · exploración\narquitecto · construcción\nHardwareState aware"]
+            TEMPORAL["⏱️ TemporalMonitor\nrecurrence · decay\ntransition · persistence"]
+            EIP_DEEP["🔮 EIP Evaluate\n15 clusters × 5 centroids\n75 embeddings\ntier 0/1/2/3"]
+        end
+
+        subgraph PHYSICS["⚛️ Physics Brain"]
+            direction LR
+            BRAIN["🧬 TRSLayer\n86 neurons × 384d\nH_ef = H₀·e^(-Fr/H₀)\nvelocity · capacity"]
+            CIRCADIAN["🌙 Circadian\nclient_hour\n3am = 0.95 risk\ndeep night escalation"]
+            POSITIVE["✨ Positive Detection\n28 vectors\ncelebration · gratitude"]
+            INSIGHT["💡 Insight Detection\n26 vectors\nah claro · pattern recognition"]
+        end
+
+        subgraph FUSION["🎛️ Sensor Fusion"]
+            RESOLVE["resolve_state()\n\nReads ALL sensors:\neip_tier + frustration + temperature\n+ physics.capacity + physics.velocity\n+ circadian_risk\n\nOutputs ONE decision:\ntono · longitud · foco"]
+            GRADIENT["📉 Crisis Gradient\n3+ scars climbing\nproactive help offer"]
+        end
+
+        subgraph PROMPT["📝 Prompt Build"]
+            direction LR
+            SYSTEM["MARIS_SYSTEM\n~339 tokens\n6 gates compressed"]
+            ANCHORS["🔗 Crisis Anchors\npersona · animal · lugar\npromesa · rutina\ncategory-aware injection"]
+            TOPICS["🚫 Sensitive Topics\nuser-configured boundaries"]
+            CONTEXT["📋 Context\nresonance · memory\nweb search · patterns"]
+        end
+
+        subgraph LLM["🤖 LLM Generation"]
+            direction LR
+            CLAUDE["Claude Sonnet 4\nSSE streaming\npresencia · exploración · arquitecto"]
+            DEEPSEEK["DeepSeek\n36 token prompt\nconstrucción only\nNO personal data"]
+        end
+
+        subgraph POSTGEN["🛡️ Post-Generation"]
+            direction TB
+            STRIP["Strip &lt;think&gt;\nDeepSeek blocks removed"]
+            DEFENSE["DefenseSystem\nbanned words\ncosine resonance &lt; 0.5"]
+            IDENTITY["IdentityGuard\nstrip Claude self-disclosure\nAnthropic · as an AI"]
+            ABSTRACT["Abstraction Check\ncosine user↔response\nflow corrupto detection"]
+            DELIBERATE["FrontalLobe.deliberate\nsovereignty verification"]
+            AGGRESSION["WarmthGuard\ncheck_aggression\nresponse vs temperature"]
+        end
+
+        subgraph TAKEAWAY["📖 Takeaway Engine"]
+            direction LR
+            CLOSURE["Emotional Closure\nfriction drops after peak"]
+            INSIGHTGEN["Insight Moment\n26 vectors detected"]
+            POSITIVEGEN["Positive Celebration\n28 vectors detected"]
+        end
+    end
+
+    SECURITY --> ANALYSIS
+    ANALYSIS --> PHYSICS
+    PHYSICS --> FUSION
+    FUSION --> PROMPT
+    PROMPT --> LLM
+    LLM --> POSTGEN
+    POSTGEN --> TAKEAWAY
+
+    TAKEAWAY --> DONE["📦 DoneEvent SSE\nfriccion · tier · modo\ndeformacion · takeaway\npositive_moment\ncrisis_resources\ncrisis_gradient"]
+
+    DONE --> IPHONEPOST
+
+    subgraph IPHONEPOST["📱 iPhone — Post Response"]
+        direction TB
+        UPDATE["updateFromDone\nlastFriccion · deformacion\ntension · modo"]
+        CACHESAVE["SemanticCache.store\nQ&A + emotional state"]
+        VAULT["LocalVault persist\nsummary · scars · anchor\ntakeaway · conversation"]
+        HAPTIC["Haptic Feedback\nlight: send\nsoft: takeaway\nsoft: crisis resources"]
+        RENDER["MessageBubble\nMarkdown rendering\ncode blocks + copy\ncrisis resources subtle"]
+    end
+
+    DONE --> BACKGROUND
+
+    subgraph BACKGROUND["⚙️ Background Tasks"]
+        direction LR
+        BRAINUP["brain_update\nTRSLayer.forward\nsnap_division"]
+        MSGCOUNT["msg_count++\nSupabase"]
+        SAVEMODE["save_last_mode\nmodo + deformacion\nSupabase · persists deploys"]
+        ANCHOR["Anchor Crystallization\nfriction &gt; 0.3\nSemanticCerebellum"]
+        DREAM["DreamState\nevery 100 msgs\nconsolidate · atrophy\nsave_soul"]
+    end
+
+    IPHONEPOST --> USERREADS["👤 User reads response"]
+
+    classDef iphone fill:#1a2e1a,stroke:#8B9467,color:#e0e0e0
+    classDef security fill:#2e1a1a,stroke:#DC2626,color:#e0e0e0
+    classDef analysis fill:#1a1a2e,stroke:#3B82F6,color:#e0e0e0
+    classDef physics fill:#2e1a2e,stroke:#A855F7,color:#e0e0e0
+    classDef fusion fill:#2e2e1a,stroke:#F59E0B,color:#e0e0e0
+    classDef prompt fill:#1a2e2e,stroke:#06B6D4,color:#e0e0e0
+    classDef llm fill:#1a2e1a,stroke:#22C55E,color:#e0e0e0
+    classDef post fill:#2e2a1a,stroke:#D4A857,color:#e0e0e0
+    classDef bg fill:#1a1a1a,stroke:#6B7280,color:#9CA3AF
+
+    class IR,CACHE,MULETILLA,LOCAL,LOCALRESP,ASK,BYPASS,SEND iphone
+    class AUTH,WARMTH1,EIP_FAST,TEMP,RATE security
+    class EMBED,FRONTAL,SELECTOR,TEMPORAL,EIP_DEEP analysis
+    class BRAIN,CIRCADIAN,POSITIVE,INSIGHT physics
+    class RESOLVE,GRADIENT fusion
+    class SYSTEM,ANCHORS,TOPICS,CONTEXT prompt
+    class CLAUDE,DEEPSEEK llm
+    class STRIP,DEFENSE,IDENTITY,ABSTRACT,DELIBERATE,AGGRESSION post
+    class CLOSURE,INSIGHTGEN,POSITIVEGEN prompt
+    class BRAINUP,MSGCOUNT,SAVEMODE,ANCHOR,DREAM bg
+    class UPDATE,CACHESAVE,VAULT,HAPTIC,RENDER iphone
+</pre>
+
+<div class="footer">
+  MARIS v1.0 — 25 marzo 2026 — DOI: 10.5281/zenodo.19225985<br>
+  86 neurons · 101 semantic vectors · 15 crisis clusters · 6 ethical gates · physics brain · $0.004/msg
+</div>
+
+<script>
+mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    flowchart: {
+        curve: 'basis',
+        padding: 15,
+        nodeSpacing: 30,
+        rankSpacing: 40
+    },
+    securityLevel: 'loose'
+});
+</script>
+</body>
+</html>

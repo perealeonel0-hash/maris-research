@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MARIS - Historical Development Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --bg: #0D0D0F;
+    --surface: #16161A;
+    --surface2: #1E1E24;
+    --border: #2A2A32;
+    --text: #E8E6E3;
+    --text-dim: #94929D;
+    --accent: #7B6FF0;
+    --accent-light: #9D94F5;
+    --green: #34D399;
+    --red: #F87171;
+    --orange: #FBBF24;
+    --blue: #60A5FA;
+    --pink: #F472B6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(123,111,240,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: rgba(123,111,240,0.12);
+    color: var(--accent-light);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    margin-bottom: 28px;
+    border: 1px solid rgba(123,111,240,0.2);
+  }
+  .hero h1 {
+    font-size: 72px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    line-height: 1.05;
+    margin-bottom: 24px;
+  }
+  .hero h1 span { color: var(--accent-light); }
+  .hero-sub {
+    font-size: 20px;
+    color: var(--text-dim);
+    max-width: 600px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+  }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    max-width: 800px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .stat-card .number {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+  .stat-card .label {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .stat-green .number { color: var(--green); }
+  .stat-accent .number { color: var(--accent-light); }
+  .stat-orange .number { color: var(--orange); }
+  .stat-blue .number { color: var(--blue); }
+
+  /* SECTIONS */
+  section {
+    padding: 100px 0;
+    border-top: 1px solid var(--border);
+  }
+  .section-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent-light);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .section-desc {
+    font-size: 17px;
+    color: var(--text-dim);
+    max-width: 600px;
+    margin-bottom: 56px;
+    line-height: 1.7;
+  }
+
+  /* DOI CALLOUT */
+  .doi-callout {
+    background: linear-gradient(135deg, rgba(123,111,240,0.08), rgba(123,111,240,0.02));
+    border: 1px solid rgba(123,111,240,0.2);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-top: 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .doi-callout .icon {
+    width: 48px; height: 48px;
+    background: rgba(123,111,240,0.15);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .doi-callout .text { font-size: 14px; color: var(--text-dim); }
+  .doi-callout .text strong { color: var(--text); font-weight: 600; }
+  .doi-callout a {
+    color: var(--accent-light);
+    text-decoration: none;
+    font-family: 'SF Mono', monospace;
+    font-size: 13px;
+  }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 48px; }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 18px; top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent), var(--green));
+    border-radius: 1px;
+  }
+  .timeline-day {
+    margin-bottom: 56px;
+    position: relative;
+  }
+  .timeline-day::before {
+    content: '';
+    position: absolute;
+    left: -37px; top: 6px;
+    width: 14px; height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+  .timeline-day:nth-child(2)::before { background: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
+  .timeline-day:nth-child(3)::before { background: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
+  .timeline-day:nth-child(4)::before { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+  .timeline-date {
+    font-size: 13px;
+    color: var(--accent-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .timeline-day:nth-child(2) .timeline-date { color: var(--blue); }
+  .timeline-day:nth-child(3) .timeline-date { color: var(--orange); }
+  .timeline-day:nth-child(4) .timeline-date { color: var(--green); }
+  .timeline-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .timeline-items {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .tl-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .tl-item strong { color: var(--text); }
+
+  /* ARCHITECTURE */
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .arch-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .arch-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .arch-card:nth-child(1)::before { background: var(--accent); }
+  .arch-card:nth-child(2)::before { background: var(--blue); }
+  .arch-card:nth-child(3)::before { background: var(--orange); }
+  .arch-card:nth-child(4)::before { background: var(--green); }
+  .arch-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+  .arch-card h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .arch-card .cost {
+    display: inline-block;
+    background: rgba(52,211,153,0.1);
+    color: var(--green);
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .arch-card p {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* COMPARISON TABLE */
+  .comp-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .comp-table thead th {
+    background: var(--surface2);
+    padding: 16px 20px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    font-weight: 600;
+    text-align: left;
+  }
+  .comp-table tbody td {
+    background: var(--surface);
+    padding: 18px 20px;
+    font-size: 14px;
+    border-top: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .comp-table tbody tr:hover td { background: var(--surface2); }
+  .tag-dead {
+    display: inline-block;
+    background: rgba(248,113,113,0.12);
+    color: var(--red);
+    padding: 2px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .tag-sued { background: rgba(251,191,36,0.12); color: var(--orange); }
+  .tag-fined { background: rgba(251,191,36,0.12); color: var(--orange); }
+  .tag-maris {
+    color: var(--green);
+    font-weight: 500;
+  }
+
+  /* MARKET */
+  .market-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .market-visual {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px 40px;
+    text-align: center;
+  }
+  .market-bar-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 40px;
+    height: 200px;
+    margin-bottom: 24px;
+  }
+  .market-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .market-bar .bar {
+    width: 80px;
+    border-radius: 8px 8px 0 0;
+  }
+  .bar-2025 {
+    height: 60px;
+    background: linear-gradient(to top, var(--accent), var(--accent-light));
+  }
+  .bar-2031 {
+    height: 180px;
+    background: linear-gradient(to top, var(--green), #6EE7B7);
+  }
+  .market-bar .year {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+  .market-bar .val {
+    font-size: 20px;
+    font-weight: 800;
+  }
+  .market-cagr {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+  .market-cagr span { color: var(--green); font-weight: 700; font-size: 18px; }
+  .market-text h3 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    line-height: 1.3;
+  }
+  .market-text p {
+    color: var(--text-dim);
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .market-highlight {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 0 12px 12px 0;
+    font-size: 15px;
+    font-weight: 500;
+    margin-top: 24px;
+  }
+
+  /* BUSINESS MODEL */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+  .pricing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+  }
+  .pricing-card.premium {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, rgba(123,111,240,0.06), var(--surface));
+  }
+  .pricing-card .tier {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .pricing-card .price {
+    font-size: 42px;
+    font-weight: 800;
+    margin-bottom: 20px;
+  }
+  .pricing-card .price small {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text-dim);
+  }
+  .pricing-card ul {
+    list-style: none;
+  }
+  .pricing-card li {
+    font-size: 14px;
+    color: var(--text-dim);
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pricing-card li::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    flex-shrink: 0;
+  }
+  .unit-econ {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .unit-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    text-align: center;
+  }
+  .unit-card .num {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--green);
+  }
+  .unit-card .lbl {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* MOAT */
+  .moat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .moat-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .moat-item h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .moat-item h4 .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .moat-item p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ROADMAP */
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .road-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+  }
+  .road-card .when {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent-light);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .road-card h4 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .road-card p {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* FOOTER */
+  .footer {
+    padding: 60px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+  .footer p {
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  .footer .conf {
+    margin-top: 12px;
+    font-size: 11px;
+    color: #555;
+  }
+
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 40px; }
+    .hero-stats, .arch-grid, .pricing-grid, .moat-grid, .roadmap-grid, .market-hero, .timeline-items { grid-template-columns: 1fr; }
+    .unit-econ { grid-template-columns: 1fr; }
+    .container { padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO / EXECUTIVE SUMMARY -->
+<div class="hero">
+  <div class="container">
+    <div class="hero-badge">Confidential Investor Report &mdash; March 2026</div>
+    <h1>Meet <span>MARIS</span></h1>
+    <p class="hero-sub">
+      MARIS is an AI-powered mental health companion that runs a 133KB emotional brain on-device, delivering clinically-validated empathetic conversations at a fraction of the cost of competitors.
+      It is the first ethical generative AI for mental health with published peer-referenceable research and a perfect safety benchmark.
+    </p>
+    <div class="hero-stats">
+      <div class="stat-card stat-green">
+        <div class="number">8/8</div>
+        <div class="label">VERA-MH Benchmark<br>Clinical safety score</div>
+      </div>
+      <div class="stat-card stat-accent">
+        <div class="number">5/5</div>
+        <div class="label">User Profiles<br>Validated empathy</div>
+      </div>
+      <div class="stat-card stat-orange">
+        <div class="number">$0.004</div>
+        <div class="label">Cost per Message<br>30-step pipeline</div>
+      </div>
+      <div class="stat-card stat-blue">
+        <div class="number">133KB</div>
+        <div class="label">On-device Brain<br>86 evolving neurons</div>
+      </div>
+    </div>
+    <div class="doi-callout">
+      <div class="icon">&#128218;</div>
+      <div class="text">
+        <strong>Published Research</strong><br>
+        Zenodo DOI: <a href="https://doi.org/10.5281/zenodo.19225985" target="_blank">10.5281/zenodo.19225985</a> &mdash; Establishing scientific priority and credibility before launch.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TIMELINE -->
+<section>
+  <div class="container">
+    <div class="section-label">Development History</div>
+    <div class="section-title">Built in 4 Days</div>
+    <p class="section-desc">From blank slate to clinically-validated, launch-ready product. Every line of code written with safety and ethics as the foundation.</p>
+
+    <div class="timeline">
+
+      <div class="timeline-day">
+        <div class="timeline-date">Day 1 &mdash; March 24, 2026</div>
+        <div class="timeline-title">The Foundation</div>
+        <div class="timeline-items">
+          <div class="tl-item"><strong>Full redesign from scratch.</strong> Removed the onboarding wall entirely. Users go direct to chat within seconds.</div>
+          <div class="tl-item"><strong>New warm palette (#FAF8F5).</strong> Designed to feel safe and approachable, not clinical or cold.</div>
+          <div class="tl-item"><strong>Anonymous registration.</strong> Backend creates session tokens with no account required. Privacy by default.</div>
+          <div class="tl-item"><strong>6 ethical gates built in.</strong> Crisis detection, WarmthGuard, rate limiting. Safety is structural, not an add-on.</div>
+        </div>
+      </div>
+
+      <div class="timeline-day">
+        <div class="timeline-date">Day 2 &mdash; March 25, 2026</div>
+        <div class="timeline-title">The Intelligence</div>
+        <div class="timeline-items">
+          <div class="tl-item"><strong>Physics Brain.</strong> Emotional memory with exponential decay and velocity. Emotions are simulated, not stored as flat data.</div>
+          <div class="tl-item"><strong>Semantic WarmthGuard.</strong> Expanded from 47 to 101 vectors. Detects harmful patterns before they reach the user.</div>
+          <div class="tl-item"><strong>On-device intent router.</strong> SemanticCache for instant responses. Emotional onboarding flow.</div>
+          <div class="tl-item"><strong>Apple compliance + Zenodo.</strong> Consent flows, disclaimers, emergency contact. Renamed AIDA to MARIS. Published research.</div>
+        </div>
+      </div>
+
+      <div class="timeline-day">
+        <div class="timeline-date">Day 3 &mdash; March 26, 2026</div>
+        <div class="timeline-title">The Hardening</div>
+        <div class="timeline-items">
+          <div class="tl-item"><strong>33-bug production audit.</strong> Every edge case found and fixed. Identity filter rebuilt with vectors, not word lists.</div>
+          <div class="tl-item"><strong>Circadian intelligence.</strong> MARIS adapts its tone and responses based on time of day. Good morning warmth. Late night gentleness.</div>
+          <div class="tl-item"><strong>Positive + insight detection.</strong> Not just crisis detection&mdash;MARIS recognizes growth, celebrates breakthroughs.</div>
+          <div class="tl-item"><strong>Infrastructure hardened.</strong> Disaster recovery, RLS policies, parallel downloads, cold start optimization.</div>
+        </div>
+      </div>
+
+      <div class="timeline-day">
+        <div class="timeline-date">Day 4 &mdash; March 27, 2026</div>
+        <div class="timeline-title">Launch Ready</div>
+        <div class="timeline-items">
+          <div class="tl-item"><strong>C-SSRS clinical validation.</strong> Industry-standard suicide risk assessment protocol integrated and tested.</div>
+          <div class="tl-item"><strong>Final cleanup and polish.</strong> Production-ready codebase. Every system documented and verified.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section>
+  <div class="container">
+    <div class="section-label">How It Works</div>
+    <div class="section-title">Four Layers of Intelligence</div>
+    <p class="section-desc">A simple, elegant architecture that keeps costs near zero while delivering clinical-grade safety.</p>
+
+    <div class="arch-grid">
+      <div class="arch-card">
+        <div class="arch-icon">&#128241;</div>
+        <h3>iPhone &mdash; Local Intelligence</h3>
+        <div class="cost">$0 when cached</div>
+        <p>Intent classification, semantic cache, and the 133KB emotional brain all run on-device. Most interactions never hit the server, keeping costs at zero and latency under 100ms.</p>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">&#9729;&#65039;</div>
+        <h3>Server &mdash; 30-Step Pipeline</h3>
+        <div class="cost">$0.004 per message</div>
+        <p>When the server is needed, a 30-step orchestration pipeline processes the message through context enrichment, emotional analysis, safety checks, and response generation.</p>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">&#128737;&#65039;</div>
+        <h3>Safety &mdash; Always On</h3>
+        <div class="cost">6 ethical gates</div>
+        <p>Crisis detection (C-SSRS), WarmthGuard (101 semantic vectors), Emergency Intervention Protocol, rate limiting, identity filtering, and content validation. Every message passes through all six.</p>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">&#129504;</div>
+        <h3>Memory &mdash; Learns &amp; Evolves</h3>
+        <div class="cost">86 neurons, physics-based</div>
+        <p>An emotional brain that grows over time. Neurons are born when new emotional patterns emerge and decay when no longer relevant. It learns, adapts, and evolves with each user.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPETITION -->
+<section>
+  <div class="container">
+    <div class="section-label">Competitive Landscape</div>
+    <div class="section-title">What Killed the Competition</div>
+    <p class="section-desc">Every major player in AI mental health has failed for predictable, avoidable reasons. MARIS was designed from day one to avoid each of these failure modes.</p>
+
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Raised</th>
+          <th>Status</th>
+          <th>What Went Wrong</th>
+          <th>MARIS Advantage</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Woebot Health</strong></td>
+          <td>$124M</td>
+          <td><span class="tag-dead">Shut Down</span></td>
+          <td style="color:var(--text-dim)">Pursued FDA clearance. Burned through capital on regulatory costs that produced no commercial product.</td>
+          <td class="tag-maris">Ethics built into the code, not dependent on regulation. 6 structural safety gates.</td>
+        </tr>
+        <tr>
+          <td><strong>Character.AI</strong></td>
+          <td>&mdash;</td>
+          <td><span class="tag-sued tag-dead">Sued</span></td>
+          <td style="color:var(--text-dim)">No safety guardrails. Users, including minors, exposed to harmful conversations without any intervention.</td>
+          <td class="tag-maris">6 gates + Emergency Intervention Protocol + WarmthGuard with 101 semantic vectors.</td>
+        </tr>
+        <tr>
+          <td><strong>Replika</strong></td>
+          <td>&mdash;</td>
+          <td><span class="tag-fined tag-dead">Fined &euro;5M</span></td>
+          <td style="color:var(--text-dim)">Privacy violations. User data handled without proper consent or protection. GDPR enforcement action.</td>
+          <td class="tag-maris">Privacy-first architecture. Data stays local. Anonymous sessions. No account required.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- MARKET -->
+<section>
+  <div class="container">
+    <div class="section-label">Market Opportunity</div>
+    <div class="section-title">A $10B Market With No Leader</div>
+
+    <div class="market-hero">
+      <div class="market-visual">
+        <div class="market-bar-container">
+          <div class="market-bar">
+            <div class="val" style="color:var(--accent-light)">$1.82B</div>
+            <div class="bar bar-2025"></div>
+            <div class="year">2025</div>
+          </div>
+          <div class="market-bar">
+            <div class="val" style="color:var(--green)">$9.96B</div>
+            <div class="bar bar-2031"></div>
+            <div class="year">2031</div>
+          </div>
+        </div>
+        <div class="market-cagr">Compound Annual Growth Rate: <span>32.7%</span></div>
+      </div>
+      <div class="market-text">
+        <h3>No FDA-cleared generative AI mental health app exists today.</h3>
+        <p>The market is growing at 32.7% CAGR, driven by a global mental health crisis, therapist shortages, and increasing acceptance of AI-assisted care.</p>
+        <p>Every competitor that raised significant capital has either shut down, been sued, or been fined. The market is wide open.</p>
+        <div class="market-highlight">
+          MARIS is the first ethical AI companion with published research, clinical validation (C-SSRS), and a perfect safety benchmark (8/8 VERA-MH).
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BUSINESS MODEL -->
+<section>
+  <div class="container">
+    <div class="section-label">Business Model</div>
+    <div class="section-title">Freemium With Strong Conversion</div>
+    <p class="section-desc">Free tier builds trust and demonstrates value. Premium unlocks health integrations and advanced analytics.</p>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="tier">Free Tier</div>
+        <div class="price">$0</div>
+        <ul>
+          <li>AI-powered empathetic conversations</li>
+          <li>Real-time crisis detection &amp; intervention</li>
+          <li>On-device emotional brain</li>
+          <li>Anonymous, no account required</li>
+          <li>Basic emotional insights</li>
+        </ul>
+      </div>
+      <div class="pricing-card premium">
+        <div class="tier">Premium</div>
+        <div class="price">$9.99 <small>/month</small></div>
+        <ul>
+          <li>Everything in Free</li>
+          <li>Apple HealthKit integration</li>
+          <li>Advanced emotional analytics</li>
+          <li>Therapist-ready session exports</li>
+          <li>Extended conversation history</li>
+          <li>Priority response quality</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="unit-econ">
+      <div class="unit-card">
+        <div class="num">$40&ndash;60</div>
+        <div class="lbl">Target ARPU / Year</div>
+      </div>
+      <div class="unit-card">
+        <div class="num">40%</div>
+        <div class="lbl">Projected Conversion<br>With 21-day trial</div>
+      </div>
+      <div class="unit-card">
+        <div class="num">$0.004</div>
+        <div class="lbl">Cost per Message<br>96%+ gross margin</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECHNICAL MOAT -->
+<section>
+  <div class="container">
+    <div class="section-label">Defensibility</div>
+    <div class="section-title">Technical Moat</div>
+    <p class="section-desc">Six interlocking systems that are difficult to replicate and impossible to shortcut.</p>
+
+    <div class="moat-grid">
+      <div class="moat-item">
+        <h4><span class="dot"></span>Evolving Neural Brain</h4>
+        <p>86 neurons that are born and die based on usage patterns. Not a static model&mdash;a living system that grows with each user over time.</p>
+      </div>
+      <div class="moat-item">
+        <h4><span class="dot" style="background:var(--blue)"></span>101 Semantic Vectors</h4>
+        <p>Frustration, positivity, and insight detection using semantic similarity. Catches nuance that keyword matching misses entirely.</p>
+      </div>
+      <div class="moat-item">
+        <h4><span class="dot" style="background:var(--green)"></span>Physics-Based Emotions</h4>
+        <p>Exponential decay and velocity modeling for emotional states. Emotions fade naturally, spike realistically, and compound authentically.</p>
+      </div>
+      <div class="moat-item">
+        <h4><span class="dot" style="background:var(--orange)"></span>On-Device Intent Router</h4>
+        <p>Classification in under 100ms at $0 cost. Most interactions are resolved locally, meaning the server is only called when truly needed.</p>
+      </div>
+      <div class="moat-item">
+        <h4><span class="dot" style="background:var(--pink)"></span>Vectorial Identity Filter</h4>
+        <p>Identity safety using vector similarity, not brittle word lists. Adapts to new language patterns without manual updates.</p>
+      </div>
+      <div class="moat-item">
+        <h4><span class="dot" style="background:var(--red)"></span>Published DOI Priority</h4>
+        <p>Zenodo DOI 10.5281/zenodo.19225985 establishes scientific priority. Timestamp-verified intellectual property before launch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section>
+  <div class="container">
+    <div class="section-label">Looking Ahead</div>
+    <div class="section-title">What's Next</div>
+    <p class="section-desc">A clear path from MVP to platform, with Apple's own AI strategy accelerating our timeline.</p>
+
+    <div class="roadmap-grid">
+      <div class="road-card">
+        <div class="when">September 2026</div>
+        <h4>iOS 26 Foundation Models</h4>
+        <p>Apple's on-device LLM enables MARIS to run its full pipeline locally. Zero server cost. Complete privacy. Instant responses.</p>
+      </div>
+      <div class="road-card">
+        <div class="when">Q3 2026</div>
+        <h4>HealthKit Premium Tier</h4>
+        <p>Heart rate, sleep, and activity data integrated into emotional context. Biometric-aware conversations that understand the whole person.</p>
+      </div>
+      <div class="road-card">
+        <div class="when">Q4 2026</div>
+        <h4>TestFlight &amp; App Store</h4>
+        <p>Apple Developer Program enrollment, TestFlight beta with real users, and public App Store launch.</p>
+      </div>
+      <div class="road-card">
+        <div class="when">2027</div>
+        <h4>Web + Android</h4>
+        <p>Same backend, new frontends. Cross-platform expansion using the existing 30-step pipeline and safety infrastructure.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="container">
+    <p><strong>MARIS</strong> &mdash; Ethical AI for Mental Health</p>
+    <p class="conf">Confidential. Prepared for prospective investors. March 2026.</p>
+  </div>
+</div>
+
+</body>
+</html>
